@@ -3,7 +3,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o demo-server ./demo
+RUN CGO_ENABLED=0 go build -o demo-server ./internal/demo_containers
 
 FROM alpine:latest
 
