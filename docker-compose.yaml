@@ -1,0 +1,77 @@
+services:
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile.controller
+    labels:
+      tested: "false"
+      controller: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/config
+    environment:
+      CONFIG_PATH: /config/config.yaml
+      OUTPUT_DIR: /config
+
+
+  node-1:
+    profiles: ["demo"]
+    init: true
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    environment:
+      - NODE_ID=1
+    restart: always
+    labels:
+      tested: "true"
+    ports:
+      - "8081:8080"
+    healthcheck:
+      # apparently alpine doesnt have curl installed, gotta use wget
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  node-2:
+    profiles: ["demo"]
+    init: true
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    environment:
+      - NODE_ID=2
+    restart: always
+    labels:
+      tested: "true"
+    ports:
+      - "8082:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+
+  node-3:
+    profiles: ["demo"]
+    init: true
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    environment:
+      - NODE_ID=3
+    restart: always
+    labels:
+      tested: "true"
+    ports:
+      - "8083:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
