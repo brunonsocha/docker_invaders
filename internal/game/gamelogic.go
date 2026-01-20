@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -32,10 +33,19 @@ const (
 
 type GameState struct {
 	Status GameStatus
+	HP int
 	Score int
 	MaxScore int
 	Weapon KillMethod
+	TargetLabel string
+}
 
+type GameDataPayload struct {
+	Status GameStatus
+	Enemies []ContainerInfo
+	HP int
+	Score int
+	MaxScore int
 }
 
 func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
@@ -50,9 +60,11 @@ func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
 		ApiClient: cli, 
 		State: GameState{
 			Status: StatusPlaying,
+			HP: 3,
 			Score: 0,
 			MaxScore: maxScore,
 			Weapon: killMethod,
+			TargetLabel: "tested=true",
 		}, 
 		InfoLog: infoLog,
 		ErrorLog: errorLog,
@@ -61,10 +73,43 @@ func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
 }
 
 func (g *GameModel) Shoot(containerId string) error {
+	if g.State.Status != StatusPlaying {
+		return fmt.Errorf("Game has already finished.")
+	}
 	g.Mu.Lock()
 	defer g.Mu.Unlock()
 	g.State.Score++
-	return g.ApiClient.KillContainer(containerId, g.State.Weapon)
+	if g.State.Score == g.State.MaxScore {
+		g.State.Status = StatusVictory
+	}
+	return g.ApiClient.KillContainer(containerId, string(g.State.Weapon))
 }
 
+func (g *GameModel) GetShot() error {
+	if g.State.Status != StatusPlaying {
+		return fmt.Errorf("Game has already finished.")
+	}
+	g.Mu.Lock()
+	defer g.Mu.Unlock()
+	g.State.HP--
+	if g.State.HP <= 0 {
+		g.State.Status = StatusDefeat
+	}
+	return nil
+}
 
+func (g *GameModel) CheckGame() (*GameDataPayload, error) {
+	g.Mu.RLock()
+	defer g.Mu.Unlock()
+	enemies, err := g.ApiClient.CheckContainers(g.State.TargetLabel)
+	if err != nil {
+		return nil, err
+	} 
+	return &GameDataPayload{
+		Status: g.State.Status,
+		Enemies: enemies,
+		HP: g.State.HP,
+		Score: g.State.Score,
+		MaxScore: g.State.MaxScore,
+	}, nil
+}
