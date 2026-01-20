@@ -38,9 +38,9 @@ func (d *DockerClient) CheckContainers(targetLabel string) ([]ContainerInfo, err
 	return containerIds, nil
 }
 
-func (d *DockerClient) KillContainer(containerId, killMethod string) error {
+func (d *DockerClient) KillContainer(containerId string, killMethod KillMethod) error {
 	exec := container.ExecOptions{
-		Cmd: []string{"kill", "-s", killMethod, "-1"},
+		Cmd: []string{"kill", "-s", string(killMethod), "-1"},
 		AttachStdout: false,
 		AttachStderr: false,
 	}

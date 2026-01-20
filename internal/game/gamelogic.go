@@ -2,6 +2,7 @@ package game
 
 import (
 	"log"
+	"os"
 	"sync"
 )
 
@@ -42,12 +43,21 @@ func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &GameModel{Mu: sync.RWMutex{}, ApiClient: cli, State: GameState{
-		Status: StatusPlaying,
-		Score: 0,
-		MaxScore: maxScore,
-		Weapon: killMethod,
-	}, nil
+	infoLog := log.New(os.Stdout, "[INFO]\t", log.Ltime)
+	errorLog := log.New(os.Stderr, "[ERROR]\t", log.Ltime)
+	return &GameModel{
+		Mu: sync.RWMutex{}, 
+		ApiClient: cli, 
+		State: GameState{
+			Status: StatusPlaying,
+			Score: 0,
+			MaxScore: maxScore,
+			Weapon: killMethod,
+		}, 
+		InfoLog: infoLog,
+		ErrorLog: errorLog,
+	},
+	nil
 }
 
 func (g *GameModel) Shoot(containerId string) error {
