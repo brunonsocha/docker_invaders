@@ -13,8 +13,8 @@ type DockerClient struct {
 }
 
 type ContainerInfo struct {
-	ID string
-	Name string
+	ID string `json:"id"`
+	Name string `json:"name"`
 }
 
 func NewDockerClient() (*DockerClient, error){

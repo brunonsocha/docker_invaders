@@ -41,11 +41,11 @@ type GameState struct {
 }
 
 type GameDataPayload struct {
-	Status GameStatus
-	Enemies []ContainerInfo
-	HP int
-	Score int
-	MaxScore int
+	Status GameStatus `json:"status"`
+	Enemies []ContainerInfo `json:"enemies"`
+	HP int `json:"hp"`
+	Score int `json:"score"`
+	MaxScore int `json:"max_score"`
 }
 
 func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
@@ -100,7 +100,10 @@ func (g *GameModel) GetShot() error {
 
 func (g *GameModel) CheckGame() (*GameDataPayload, error) {
 	g.Mu.RLock()
-	defer g.Mu.Unlock()
+	hp := g.State.HP
+	score := g.State.Score
+	maxScore := g.State.MaxScore
+	g.Mu.RUnlock()
 	enemies, err := g.ApiClient.CheckContainers(g.State.TargetLabel)
 	if err != nil {
 		return nil, err
@@ -108,8 +111,8 @@ func (g *GameModel) CheckGame() (*GameDataPayload, error) {
 	return &GameDataPayload{
 		Status: g.State.Status,
 		Enemies: enemies,
-		HP: g.State.HP,
-		Score: g.State.Score,
-		MaxScore: g.State.MaxScore,
+		HP: hp,
+		Score: score,
+		MaxScore: maxScore,
 	}, nil
 }
