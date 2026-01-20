@@ -6,6 +6,8 @@ services:
     labels:
       tested: "false"
       controller: "true"
+    ports:
+      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/config

@@ -79,7 +79,7 @@ class Projectile {
 }
 
 class Enemy {
-    constructor({position, dockerId}) {
+    constructor({position, dockerId, name}) {
         this.position = position
         this.velocity = {
             x: 0,
@@ -88,25 +88,71 @@ class Enemy {
         this.width = 40
         this.height = 40
         this.dockerId = dockerId
+        this.name = name.startsWith('/') ? name.substring(1) : name
     }
 
     draw() {
+        ctx.fillStyle = 'white'
+        ctx.font = '12px monospace'
+        ctx.textAlign = 'center'
+        ctx.fillText(this.name, this.position.x + this.width/2, this.position.y - 10)
         ctx.fillStyle = '#FF30DD'
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
-        ctx.fillStyle = 'black'
-        ctx.font = '14px monospace'
-        ctx.textAlign = 'center'
-        const shortId = this.dockerId.substring(0, 12)
-        ctx.fillText(shortId, this.position.x + this.width/2, this.position.y, this.height/2)
     }
     update() {
         this.draw()
     }
 }
 
+async function updateGameState() {
+    fetch('/api/checkgame')
+        .then(response => response.json())
+        .then(data => {
+            enemies = []
+            if (!data.enemies)
+                return;
+
+            data.enemies.forEach((enemy, index) => {
+                const col = index % 4
+                const row = Math.floor(index/4)
+                enemies.push(new Enemy({
+                    position: {
+                        x: col * 150 + 50,
+                        y: row * 80 + 50
+                    },
+                    dockerId: enemy.id,
+                    name: enemy.name || enemy.Names[0] || "Unknown"
+                }))
+            })
+        })
+    .catch(err => {
+            console.error("Error:", err)
+        })
+}
+
+async function shootEnemy(containerId) {
+    try {
+        const res = await fetch('/api/shoot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({id: containerId})
+        });
+    
+        if (res.ok) {
+            console.log('Container killed')
+        } else {
+            console.error('Could not shoot')
+        }
+    } catch (err) {
+        console.error('Could not reach API')
+    }
+}
+
 const player = new Player()
 const projectiles = []
-const enemies = []
+let enemies = []
 const keys = {
     a: {
         pressed: false
@@ -123,6 +169,14 @@ function animate() {
     requestAnimationFrame(animate)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawGrid()
+    enemies.forEach(enemy => {
+        enemy.update({
+            velocity: {
+                x: 0,
+                y: 0
+            }
+        })
+    })
     player.update()
     projectiles.forEach((projectile, i) => {
         if (projectile.position.y + projectile.radius <= 0) {
@@ -143,6 +197,23 @@ function animate() {
         player.velocity.x = 0
         player.rotation = 0
     }
+    projectiles.forEach((projectile, projIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+            const distance = Math.hypot(projectile.position.x - (enemy.position.x + enemy.width/2), projectile.position.y - (enemy.position.y + enemy.height/2))
+
+            if (distance - enemy.width/2 - projectile.radius < 1) {
+                setTimeout(() => {
+                    const foundProj = projectiles.find(p => p === projectile)
+                    if (foundProj) projectiles.splice(projIndex, 1)
+                }, 0)
+                shootEnemy(enemy.dockerId)
+                setTimeout(() => {
+                    const foundE = enemies.find(e => e === enemy)
+                    if (foundE) enemies.splice(enemyIndex, 1)
+                }, 0)
+            }
+        })
+    })
 }
 animate()
 
@@ -196,3 +267,5 @@ function log(msg, type="normal") {
 
 setTimeout(() => log("Connected to localhost:8080", "info"), 1000);
 setTimeout(() => log("WARNING: No containers detected", "error"), 2000);
+// idk if this is going to be smooth
+setInterval(updateGameState, 500);
