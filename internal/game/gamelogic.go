@@ -1,13 +1,60 @@
 package game
 
 import (
+	"log"
 	"sync"
-
-	"github.com/docker/docker/client"
 )
 
 type GameModel struct {
 	Mu sync.RWMutex
-	ApiClient DockerClient
+	ApiClient *DockerClient
 	State GameState
+	InfoLog *log.Logger
+	ErrorLog *log.Logger
 }
+
+type GameStatus string
+
+const (
+	StatusPlaying GameStatus = "PLAYING"
+	StatusVictory GameStatus = "VICTORY"
+	StatusDefeat GameStatus = "DEFEAT"
+)
+
+type KillMethod string
+
+const (
+	Sigkill KillMethod = "SIGKILL"
+	Sigterm KillMethod = "SIGTERM"
+	Sigsegv KillMethod = "SIGSEGV"
+)
+
+type GameState struct {
+	Status GameStatus
+	Score int
+	MaxScore int
+	Weapon KillMethod
+
+}
+
+func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
+	cli, err := NewDockerClient()
+	if err != nil {
+		return nil, err
+	}
+	return &GameModel{Mu: sync.RWMutex{}, ApiClient: cli, State: GameState{
+		Status: StatusPlaying,
+		Score: 0,
+		MaxScore: maxScore,
+		Weapon: killMethod,
+	}, nil
+}
+
+func (g *GameModel) Shoot(containerId string) error {
+	g.Mu.Lock()
+	defer g.Mu.Unlock()
+	g.State.Score++
+	return g.ApiClient.KillContainer(containerId, g.State.Weapon)
+}
+
+
