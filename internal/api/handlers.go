@@ -14,8 +14,17 @@ type ShotRequest struct {
 	ContainerId string `json:"id"`
 }
 
+func NewGameHandler() (*GameHandler, error) {
+	gm, err := game.NewGameModel(game.Sigkill, 10)
+	if err != nil {
+		return nil, err
+	}
+	return &GameHandler{GameModel: gm}, nil
+}
+
 func (gh *GameHandler) Home(w http.ResponseWriter, r *http.Request) {
-	// this just renders the game
+	http.ServeFile(w, r, "./web/index.html")
+
 }
 
 func (gh *GameHandler) ShootPost(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +52,7 @@ func (gh *GameHandler) GetShotPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (gh *GameHandler) CheckGame(w http.ResponseWriter, r *http.Request) {
+func (gh *GameHandler) CheckGameGet(w http.ResponseWriter, r *http.Request) {
 	payload, err := gh.GameModel.CheckGame()
 	if err != nil {
 		gh.GameModel.ErrorLog.Printf("Couldn't check the game: %v", err)
