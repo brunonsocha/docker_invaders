@@ -51,38 +51,7 @@
     </div>
 </main>
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    
-    for(let x=0; x<800; x+=50) {
-        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,600); ctx.stroke();
-    }
-    for(let y=0; y<600; y+=50) {
-        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(800,y); ctx.stroke();
-    }
-
-    ctx.fillStyle = '#FFC400';
-    ctx.fillRect(375, 550, 50, 30);
-
-    function log(msg, type="normal") {
-        const box = document.getElementById('consoleLog');
-        const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-        const entry = document.createElement('div');
-        entry.className = "log-entry";
-        entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg ${type}">${msg}</span>`;
-        box.appendChild(entry);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    setTimeout(() => log("Connected to localhost:8080", "info"), 1000);
-    setTimeout(() => log("WARNING: No containers detected", "error"), 2000);
-</script>
-
-<script src="game.js"></script>
+<script src="/static/game.js"></script>
 
 </body>
 </html>

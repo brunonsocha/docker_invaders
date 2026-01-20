@@ -78,11 +78,14 @@ func (g *GameModel) Shoot(containerId string) error {
 	}
 	g.Mu.Lock()
 	defer g.Mu.Unlock()
+	if err := g.ApiClient.KillContainer(containerId, string(g.State.Weapon)); err != nil {
+		return err
+	}
 	g.State.Score++
 	if g.State.Score == g.State.MaxScore {
 		g.State.Status = StatusVictory
 	}
-	return g.ApiClient.KillContainer(containerId, string(g.State.Weapon))
+	return nil
 }
 
 func (g *GameModel) GetShot() error {
