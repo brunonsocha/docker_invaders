@@ -33,9 +33,71 @@ export function showGameInterface() {
     document.getElementById('menuScreen').classList.add('hidden');
 }
 
-export function showVictory() {
-    document.getElementById('victoryScreen').classList.remove('hidden');
+export function showLoading() {
+    document.getElementById('loadingScreen').classList.remove('hidden');
 }
+
+export function showVictory(stats) {
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('victoryScreen').classList.remove('hidden');
+
+    if (!stats) return;
+
+    const list = document.getElementById('statsList');
+    list.innerHTML = '';
+    
+    let totalNs = 0;
+    let maxNs = 0;
+    let slowestName = "None";
+
+    stats.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        
+        const seconds = (s.ttr / 1_000_000_000).toFixed(2);
+        totalNs += s.ttr;
+
+        if (s.ttr > maxNs) {
+            maxNs = s.ttr;
+            slowestName = s.container.name;
+        }
+
+        row.innerHTML = `
+            <span style="color: #fff">${s.container.name}</span>
+            <span style="color: ${s.state === 'RECOVERED' ? 'var(--success)' : 'var(--danger)'}">${s.state}</span>
+            <span style="font-family: monospace">${seconds}s</span>
+        `;
+        list.appendChild(row);
+    });
+
+    const avgSeconds = (stats.length > 0) ? (totalNs / stats.length / 1_000_000_000).toFixed(2) : "0.00";
+    document.getElementById('avgTime').innerText = avgSeconds + "s";
+    document.getElementById('slowestContainer').innerText = slowestName;
+    
+    window.lastGameStats = stats;
+}
+
+window.downloadCSV = function() {
+    if (!window.lastGameStats) return;
+    
+    const stats = window.lastGameStats;
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Container ID,Name,Kill Method,Status,Recovery Time (s)\n";
+
+    stats.forEach(s => {
+        const timeSec = (s.ttr / 1_000_000_000).toFixed(4);
+        csvContent += `${s.container.id},${s.container.name},${s.kill_method},${s.state},${timeSec}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "docker_invaders_telemetry.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 export function showDefeat() {
     document.getElementById('defeatScreen').classList.remove('hidden');
     window.history.pushState({}, "", "/forbidden.html")

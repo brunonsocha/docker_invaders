@@ -158,4 +158,147 @@ canvas {
     color: #fff;
     text-transform: uppercase;
     font-size: 1.5rem;
-    border-bottom: 1px dashed var(--dim
+    border-bottom: 1px dashed var(--dim);
+    padding-bottom: 10px;
+}
+
+.input-group { margin: 1.5rem 0; text-align: left; }
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--dim);
+    font-weight: bold;
+}
+
+select, input {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    border: 1px solid var(--dim);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+select:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #fff;
+    box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    transform: translateY(-2px);
+}
+
+.msg-box.success {
+    border-color: var(--success);
+    color: var(--success);
+    box-shadow: 0 0 25px var(--success-glow);
+}
+.msg-box.success button {
+    background: var(--success);
+}
+
+.loading-spinner {
+    width: 100%;
+    height: 4px;
+    background: #222;
+    margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.spinner-bar {
+    width: 30%;
+    height: 100%;
+    background: var(--accent);
+    position: absolute;
+    animation: slide 1.5s infinite ease-in-out;
+}
+
+@keyframes slide {
+    0% { left: -30%; }
+    100% { left: 100%; }
+}
+
+.stats-container {
+    margin: 1.5rem 0;
+    border: 1px dashed var(--dim);
+    background: rgba(0,0,0,0.5);
+    text-align: left;
+}
+
+.stat-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 0.5rem;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+}
+
+.stat-row.header {
+    background: rgba(255,255,255,0.05);
+    color: var(--dim);
+    font-weight: bold;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.stat-row span:last-child { text-align: right; }
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-top: 1px dashed var(--dim);
+    padding-top: 1rem;
+}
+
+.summary-grid .label { display: block; color: var(--dim); font-size: 0.7rem; }
+.summary-grid .val { display: block; color: #fff; font-size: 1.2rem; font-weight: bold; }
+
+.btn-group { display: flex; gap: 1rem; }
+
+#defeatScreen {
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: white;
+    color: #333;
+    z-index: 9999; 
+    font-family: 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#defeatScreen h1 { color: #000; font-size: 2.5rem; border: none; }
+#defeatScreen hr { width: 60%; margin: 20px 0; border-top: 1px solid #ccc; }
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.console-log::-webkit-scrollbar { width: 8px; }
+.console-log::-webkit-scrollbar-thumb { background: #333; }
+.console-log::-webkit-scrollbar-track { background: var(--bg); }

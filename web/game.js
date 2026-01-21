@@ -11,7 +11,8 @@ import {
     initMenu,
     showGameInterface,
     showVictory,
-    showDefeat
+    showDefeat,
+    showLoading
 } from './ui.js'
 
 const canvas = document.getElementById('gameCanvas');
@@ -177,11 +178,14 @@ async function syncGame() {
     const data = await updateGameState();
     if (!data)
         return;
-
+    if (data.status === "FINALIZING") {
+        showLoading();
+        return;
+    } 
     if (data.status === "VICTORY") {
         gameRunning = false;
         clearInterval(gameInterval);
-        showVictory();
+        showVictory(data.stats);
         return;
     }
     if (data.status === "DEFEAT") {

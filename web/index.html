@@ -61,13 +61,45 @@
             <button id="startBtn">START</button>
         </div>
     </div>
-
+    <div id="loadingScreen" class="overlay hidden">
+        <div class="menu-box">
+        <h1>LOADING STATS</h1>
+        <div class="loading-spinner">
+            <div class="spinner-bar"></div>
+        </div>
+        <p style="color: var(--dim); margin-top: 1rem; font-size: 0.8rem;">
+                WAITING FOR CONTAINER RECOVERY...
+            </p>
+        </div>
+    </div>
     <div id="victoryScreen" class="overlay hidden">
-        <div class="msg-box success">
-            <h1>TESTING COMPLETE</h1>
-            <p>Max iterations reached.</p>
-            <br>
-            <button onclick="location.reload()">RESTART</button>
+        <div class="msg-box success" style="width: 600px;">
+            <h1>MISSION COMPLETE</h1>
+            
+            <div class="stats-container">
+                <div class="stat-row header">
+                    <span>CONTAINER</span>
+                    <span>STATUS</span>
+                    <span>RECOVERY</span>
+                </div>
+                <div id="statsList" class="stats-list"></div>
+            </div>
+
+            <div class="summary-grid">
+                <div>
+                    <span class="label">AVG RECOVERY</span>
+                    <span class="val" id="avgTime">--</span>
+                </div>
+                <div>
+                    <span class="label">SLOWEST</span>
+                    <span class="val" id="slowestContainer">--</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button onclick="downloadCSV()">DOWNLOAD CSV</button>
+                <button onclick="location.reload()" style="background: transparent; border: 1px solid var(--success); color: var(--success);">RESTART</button>
+            </div>
         </div>
     </div>
     <div id="defeatScreen" class="hidden">
