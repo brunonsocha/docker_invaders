@@ -1,12 +1,17 @@
 import { 
     updateGameState,
     shootEnemy,
-    getShot
+    getShot,
+    setGame
 } from './api.js';
 
 import {
     log,
-    updateUI
+    updateUI,
+    initMenu,
+    showGameInterface,
+    showVictory,
+    showDefeat
 } from './ui.js'
 
 const canvas = document.getElementById('gameCanvas');
@@ -150,6 +155,9 @@ const player = new Player()
 let projectiles = []
 let enemies = new Map();
 let enemyProjectiles = []
+let gameRunning = false;
+let gameInterval = null;
+let animationId = null;
 const keys = {
     a: {
         pressed: false
@@ -163,9 +171,25 @@ const keys = {
 }
 
 async function syncGame() {
+    if (!gameRunning)
+        return;
+    
     const data = await updateGameState();
     if (!data)
         return;
+
+    if (data.status === "VICTORY") {
+        gameRunning = false;
+        clearInterval(gameInterval);
+        showVictory();
+        return;
+    }
+    if (data.status === "DEFEAT") {
+        gameRunning = false;
+        clearInterval(gameInterval);
+        showDefeat();
+        return;
+    }
 
     updateUI(data);
 
@@ -203,7 +227,9 @@ async function syncGame() {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    if (!gameRunning)
+        return;
+    animationId = requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawGrid();
     if (keys.a.pressed && player.position.x >= 0) {
@@ -296,6 +322,20 @@ function animate() {
     
 }
 
+const startGame = async (killMethod, iterations) => {
+    const success = await setGame(killMethod, iterations);
+    if (success) {
+        showGameInterface();
+        gameRunning = true;
+        if (gameInterval)
+            clearInterval(gameInterval);
+        if (animationId)
+            cancelAnimationFrame(animationId);
+        gameInterval = setInterval(syncGame, 500);
+        animate();
+    }
+}
+
 addEventListener('keydown', ({key}) => {
     switch (key) {
         case 'a':
@@ -334,9 +374,7 @@ addEventListener('keyup', ({key}) => {
     }
 })
 
-// idk if this is going to be smooth
-setInterval(syncGame, 500);
-animate();
+initMenu(startGame);
 
 setTimeout(() => log("Connected to localhost:8080", "info"), 1000);
 setTimeout(() => log("Game started", "info"), 1500);

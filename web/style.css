@@ -2,9 +2,12 @@
     --bg: #0a0a0a;
     --fg: #d4d4d4;
     --accent: #FFC400;
+    --accent-glow: rgba(255, 196, 0, 0.3);
     --danger: #ff4444; 
     --success: #44ff44;
+    --success-glow: rgba(68, 255, 68, 0.3);
     --dim: #555;
+    --grid-line: #1a1a1a;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,6 +31,7 @@ main {
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative; 
 }
 
 header {
@@ -53,7 +57,7 @@ h1 {
 
 .hud-grid { 
     display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(2, 1fr); 
     gap: 1rem; 
     margin-bottom: 1rem;
     font-size: 0.9rem;
@@ -63,6 +67,7 @@ h1 {
     border: 1px dashed #333;
     padding: 0.5rem;
     text-align: center;
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .hud-label { 
@@ -89,7 +94,8 @@ h1 {
     justify-content: center;
     align-items: center;
     margin-bottom: 1rem;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    overflow: hidden;
 }
 
 canvas {
@@ -104,6 +110,8 @@ canvas {
     padding-top: 0.5rem;
     overflow-y: auto; 
     font-size: 0.85rem;
+    background: #000;
+    padding: 10px;
 }
 
 .console-title {
@@ -114,47 +122,40 @@ canvas {
     display: block;
 }
 
-.log-entry { margin-bottom: 0.25rem; }
+.log-entry { margin-bottom: 0.25rem; border-left: 2px solid transparent; padding-left: 5px; }
 .log-time { color: var(--dim); margin-right: 0.5rem; }
 .log-msg { color: var(--fg); }
 .log-msg.error { color: var(--danger); }
 .log-msg.info { color: var(--accent); }
+.log-msg.success { color: var(--success); }
 
-.contact-grid { 
-    display: grid; 
-    grid-template-columns: 80px auto; 
-    gap: 0.5rem 1rem;
-    align-items: baseline;
+.overlay {
+    position: absolute; 
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
 }
 
-.secondary-contact {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px dashed #222; 
+.hidden { display: none !important; }
+
+.menu-box, .msg-box {
+    border: 2px solid var(--accent);
+    padding: 3rem;
+    background: #000;
+    color: var(--accent);
+    text-align: center;
+    box-shadow: 0 0 25px var(--accent-glow);
+    width: 400px;
+    max-width: 90%;
 }
 
-.secondary-contact .note {
-    display: block;
-    margin-bottom: 0.75rem;
-    color: #555;
-    font-size: 1rem; 
-    font-weight: bold;
+.menu-box h1, .msg-box h1 {
+    margin-bottom: 1.5rem;
+    color: #fff;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-footer {
-    border-top: 1px dashed #333;
-    padding-top: 1rem;
-    margin-top: 2rem;
-    font-size: 0.8rem;
-    opacity: 0.3;
-}
-
-@keyframes blink { 50% { opacity: 0; } }
-
-.console-log::-webkit-scrollbar { width: 8px; }
-.console-log::-webkit-scrollbar-thumb { background: #333; }
-.console-log::-webkit-scrollbar-track { background: var(--bg); }
-
-
+    font-size: 1.5rem;
+    border-bottom: 1px dashed var(--dim

@@ -34,7 +34,22 @@ export async function getShot() {
         });
         return response.ok;
     } catch (err) {
-        console.rror('Could not get shot')
+        console.error('Could not get shot')
         return false
+    }
+}
+
+export async function setGame(killMethod, iterations) {
+    try {
+        const response = await fetch('/api/setgame', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({kill_method: killMethod, iterations: parseInt(iterations)})
+        })
+        return response.ok;;
+    } catch (err) {
+        console.error('Could not change game settings.', err)
     }
 }

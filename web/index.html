@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Invaders</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=2">
 </head>
 <body>
 
@@ -41,6 +41,41 @@
             <span class="log-msg">Waiting for Docker Socket...</span>
         </div>
     </div>
+
+
+    <div id="menuScreen" class="overlay">
+        <div class="menu-box">
+            <h1>SETTINGS</h1>
+            <div class="input-group">
+                <label>SELECT WEAPON</label>
+                <select id="weaponSelect">
+                    <option value="SIGKILL">SIGKILL</option>
+                    <option value="SIGSEGV">SIGSEGV</option>
+                    <option value="SIGTERM">SIGTERM</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>TOTAL ITERATIONS</label>
+                <input type="number" id="iterInput" value="5" min="1" max="50">
+            </div>
+            <button id="startBtn">START</button>
+        </div>
+    </div>
+
+    <div id="victoryScreen" class="overlay hidden">
+        <div class="msg-box success">
+            <h1>TESTING COMPLETE</h1>
+            <p>Max iterations reached.</p>
+            <br>
+            <button onclick="location.reload()">RESTART</button>
+        </div>
+    </div>
+    <div id="defeatScreen" class="hidden">
+        <h1>403 Forbidden</h1>
+        <hr>
+        <p>nginx/1.18.0 (Ubuntu)</p>
+    </div>
+
 </main>
 
 <script type="module" src="/static/game.js"></script>

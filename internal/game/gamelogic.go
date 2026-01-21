@@ -140,5 +140,9 @@ func (g *GameModel) SetGame(killMethod string, maxScore int) error {
 	defer g.Mu.Unlock()
 	g.State.MaxScore = maxScore
 	g.State.Weapon = validMethod
+	g.State.HP = 3
+	g.State.Status = StatusPlaying
+	g.State.Score = 0
 	return nil
 }
+

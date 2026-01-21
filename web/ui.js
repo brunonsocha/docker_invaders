@@ -19,3 +19,26 @@ export function updateUI(gamestate) {
     const total = gamestate.max_score || "?";
     setText('targetsVal', `${current}/${total}`);
 }
+
+export function initMenu(onStartGame) {
+    const btn = document.getElementById('startBtn');
+    btn.onclick = () => {
+        const killMethod = document.getElementById('weaponSelect').value;
+        const iterations = document.getElementById('iterInput').value;
+        onStartGame(killMethod, iterations)
+    };
+}
+
+export function showGameInterface() {
+    document.getElementById('menuScreen').classList.add('hidden');
+}
+
+export function showVictory() {
+    document.getElementById('victoryScreen').classList.remove('hidden');
+}
+export function showDefeat() {
+    document.getElementById('defeatScreen').classList.remove('hidden');
+    window.history.pushState({}, "", "/forbidden.html")
+}
+
+
