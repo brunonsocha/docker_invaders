@@ -119,3 +119,25 @@ func (g *GameModel) CheckGame() (*GameDataPayload, error) {
 		MaxScore: maxScore,
 	}, nil
 }
+
+func (g *GameModel) SetGame(killMethod string, maxScore int) error {
+	var validMethod KillMethod
+	switch killMethod {
+	case string(Sigkill):
+		validMethod = Sigkill
+	case string(Sigterm):
+		validMethod = Sigterm
+	case string(Sigsegv):
+		validMethod = Sigsegv
+	default:
+		return fmt.Errorf("Invalid kill method.")
+	}
+	if maxScore <= 0 {
+		return fmt.Errorf("Invalid number of iterations.")
+	}
+	g.Mu.Lock()
+	defer g.Mu.Unlock()
+	g.State.MaxScore = maxScore
+	g.State.Weapon = validMethod
+	return nil
+}

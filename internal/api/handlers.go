@@ -14,6 +14,11 @@ type ShotRequest struct {
 	ContainerId string `json:"id"`
 }
 
+type SetGameRequest struct {
+	KillMethod string `json:"kill_method"`
+	Iterations int `json:"iterations"`
+}
+
 func NewGameHandler() (*GameHandler, error) {
 	gm, err := game.NewGameModel(game.Sigkill, 10)
 	if err != nil {
@@ -65,4 +70,19 @@ func (gh *GameHandler) CheckGameGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (gh *GameHandler) SetGamePost(w http.ResponseWriter, r *http.Request) {
+	var setReq SetGameRequest
+	if err := json.NewDecoder(r.Body).Decode(&setReq); err != nil {
+		gh.GameModel.ErrorLog.Printf("Couldn't set the settings.")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := gh.GameModel.SetGame(setReq.KillMethod, setReq.Iterations); err != nil {
+		gh.GameModel.ErrorLog.Printf("Couldn't set the settings.")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

@@ -20,6 +20,7 @@ func main() {
 	mux.HandleFunc("POST /api/shoot", gh.ShootPost)
 	mux.HandleFunc("POST /api/getshot", gh.GetShotPost)
 	mux.HandleFunc("GET /api/checkgame", gh.CheckGameGet)
+	mux.HandleFunc("POST /api/setgame", gh.SetGamePost)
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal(err)
 	}
