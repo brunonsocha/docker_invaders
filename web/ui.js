@@ -33,6 +33,14 @@ export function showGameInterface() {
     document.getElementById('menuScreen').classList.add('hidden');
 }
 
+export function initWelcome() {
+    const btn = document.getElementById('enterBtn');
+    btn.onclick = () => {
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('menuScreen').classList.remove('hidden');
+    };
+}
+
 export function showLoading() {
     document.getElementById('loadingScreen').classList.remove('hidden');
 }

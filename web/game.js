@@ -12,7 +12,8 @@ import {
     showGameInterface,
     showVictory,
     showDefeat,
-    showLoading
+    showLoading,
+    initWelcome
 } from './ui.js'
 
 const canvas = document.getElementById('gameCanvas');
@@ -157,6 +158,7 @@ let projectiles = []
 let enemies = new Map();
 let enemyProjectiles = []
 let gameRunning = false;
+let isFinalizing = false;
 let gameInterval = null;
 let animationId = null;
 const keys = {
@@ -171,6 +173,40 @@ const keys = {
     }
 }
 
+function getSafePosition(newWidth, newHeight, existingEnemies) {
+    const padding = 20; 
+    const buffer = 50; 
+    const maxY = canvas.height * 0.3; 
+    
+    let attempts = 0;
+    let maxAttempts = 100;
+    let x, y;
+    let safe = false;
+
+    while (!safe && attempts < maxAttempts) {
+        attempts++;
+        x = Math.random() * (canvas.width - newWidth - 2 * padding) + padding;
+        y = Math.random() * (maxY - newHeight - padding) + padding;
+        safe = true;
+
+        for (const enemy of existingEnemies.values()) {
+            const ex = enemy.position.x;
+            const ey = enemy.position.y;
+            const ew = enemy.width;
+            const eh = enemy.height;
+
+            if (x < ex + ew + buffer &&
+                x + newWidth + buffer > ex &&
+                y < ey + eh + buffer &&
+                y + newHeight + buffer > ey) {
+                safe = false;
+                break; 
+            }
+        }
+    }
+    return { x, y };
+}
+
 async function syncGame() {
     if (!gameRunning)
         return;
@@ -179,6 +215,8 @@ async function syncGame() {
     if (!data)
         return;
     if (data.status === "FINALIZING") {
+        isFinalizing = true;
+        enemyProjectiles = [];
         showLoading();
         return;
     } 
@@ -207,12 +245,14 @@ async function syncGame() {
     data.enemies.forEach((enemyData, index) => {
         serverIds.add(enemyData.id);
         if (!enemies.has(enemyData.id)) {
-            const col = index % 4;
-            const row = Math.floor(index / 4);
+            const {
+                x, 
+                y
+            } = getSafePosition(40, 40, enemies);
             const newEnemy = new Enemy({
                 position: {
-                    x: col*150 + 50,
-                    y: row*80 + 50
+                    x: x,
+                    y: y
                 },
                 dockerId: enemyData.id,
                 name: enemyData.name || (enemyData.Names ? enemyData.Names[0] : "Unknown")
@@ -250,7 +290,7 @@ function animate() {
     enemies.forEach(enemy => {
         enemy.update();
 
-        if (!enemy.isKill && Math.random() < 0.005) {
+        if (!enemy.isKill && Math.random() < 0.005 && !isFinalizing) {
             enemyProjectiles.push(new EnemyProjectile({
                 position: {
                     x: enemy.position.x + enemy.width/2,
@@ -271,7 +311,7 @@ function animate() {
             proj.markDelete = true;
         }
 
-        if (player.loaded && !proj.markDelete) {
+        if (player.loaded && !proj.markDelete && !isFinalizing) {
             if (proj.position.x >= player.position.x &&
                 proj.position.x <= player.position.x + player.width &&
                 proj.position.y >= player.position.y &&
@@ -331,6 +371,7 @@ const startGame = async (killMethod, iterations) => {
     if (success) {
         showGameInterface();
         gameRunning = true;
+        isFinalizing = false;
         if (gameInterval)
             clearInterval(gameInterval);
         if (animationId)
@@ -377,7 +418,7 @@ addEventListener('keyup', ({key}) => {
             break
     }
 })
-
+initWelcome();
 initMenu(startGame);
 
 setTimeout(() => log("Connected to localhost:8080", "info"), 1000);

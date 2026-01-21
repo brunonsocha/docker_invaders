@@ -246,6 +246,8 @@ button:hover {
     border: 1px dashed var(--dim);
     background: rgba(0,0,0,0.5);
     text-align: left;
+    display: flex;
+    flex-direction: column;
 }
 
 .stat-row {
@@ -262,9 +264,15 @@ button:hover {
     font-weight: bold;
     font-size: 0.7rem;
     letter-spacing: 0.05em;
+    flex-shrink: 0;
 }
 
 .stat-row span:last-child { text-align: right; }
+
+.stats-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
 
 .summary-grid {
     display: grid;
