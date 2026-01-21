@@ -106,13 +106,14 @@ func (g *GameModel) CheckGame() (*GameDataPayload, error) {
 	hp := g.State.HP
 	score := g.State.Score
 	maxScore := g.State.MaxScore
+	status := g.State.Status
 	g.Mu.RUnlock()
 	enemies, err := g.ApiClient.CheckContainers(g.State.TargetLabel)
 	if err != nil {
 		return nil, err
 	} 
 	return &GameDataPayload{
-		Status: g.State.Status,
+		Status: status,
 		Enemies: enemies,
 		HP: hp,
 		Score: score,

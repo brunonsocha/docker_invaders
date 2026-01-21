@@ -1,3 +1,13 @@
+import { 
+    updateGameState,
+    shootEnemy
+} from './api.js';
+
+import {
+    log,
+    updateUI
+} from './ui.js'
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -104,55 +114,10 @@ class Enemy {
     }
 }
 
-async function updateGameState() {
-    fetch('/api/checkgame')
-        .then(response => response.json())
-        .then(data => {
-            enemies = []
-            if (!data.enemies)
-                return;
-
-            data.enemies.forEach((enemy, index) => {
-                const col = index % 4
-                const row = Math.floor(index/4)
-                enemies.push(new Enemy({
-                    position: {
-                        x: col * 150 + 50,
-                        y: row * 80 + 50
-                    },
-                    dockerId: enemy.id,
-                    name: enemy.name || enemy.Names[0] || "Unknown"
-                }))
-            })
-        })
-    .catch(err => {
-            console.error("Error:", err)
-        })
-}
-
-async function shootEnemy(containerId) {
-    try {
-        const res = await fetch('/api/shoot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({id: containerId})
-        });
-    
-        if (res.ok) {
-            console.log('Container killed')
-        } else {
-            console.error('Could not shoot')
-        }
-    } catch (err) {
-        console.error('Could not reach API')
-    }
-}
-
 const player = new Player()
 const projectiles = []
 let enemies = []
+const deadEnemies = new Set()
 const keys = {
     a: {
         pressed: false
@@ -163,6 +128,45 @@ const keys = {
     space: {
         pressed: false
     }
+}
+
+async function syncGame() {
+    const data = await updateGameState();
+    if (!data)
+        return;
+
+    updateUI(data);
+
+    if (!data.enemies) {
+        enemies = [];
+        deadEnemies.clear();
+        return;
+    }
+
+    const serverIds = new Set(data.enemies.map(e => e.id));
+
+    deadEnemies.forEach(id => {
+        if (!serverIds.has(id)) {
+            deadEnemies.delete(id);
+        }
+    });
+
+    enemies = [];
+    data.enemies.forEach((enemyData, index) => {
+        if (deadEnemies.has(enemyData.id)) {
+            return;
+        }
+        const col = index % 4;
+        const row = Math.floor(index / 4);
+        enemies.push(new Enemy({
+            position: {
+                x: col*150 + 50,
+                y: row*80 + 50
+            },
+            dockerId: enemyData.id,
+            name: enemyData.name || (enemyData.Names ? enemyData.Names[0] : "Unknown")
+        }));
+    });
 }
 
 function animate() {
@@ -197,25 +201,29 @@ function animate() {
         player.velocity.x = 0
         player.rotation = 0
     }
-    projectiles.forEach((projectile, projIndex) => {
-        enemies.forEach((enemy, enemyIndex) => {
+    projectiles.forEach((projectile) => {
+        enemies.forEach((enemy) => {
             const distance = Math.hypot(projectile.position.x - (enemy.position.x + enemy.width/2), projectile.position.y - (enemy.position.y + enemy.height/2))
 
             if (distance - enemy.width/2 - projectile.radius < 1) {
                 setTimeout(() => {
-                    const foundProj = projectiles.find(p => p === projectile)
-                    if (foundProj) projectiles.splice(projIndex, 1)
+                    const currprojIndex = projectiles.indexOf(projectile);
+                    if (currprojIndex > -1) { 
+                        projectiles.splice(currprojIndex, 1)
+                    }
                 }, 0)
                 shootEnemy(enemy.dockerId)
                 setTimeout(() => {
-                    const foundE = enemies.find(e => e === enemy)
-                    if (foundE) enemies.splice(enemyIndex, 1)
+                    const currenemyIndex = enemies.indexOf(enemy)
+                    if (currenemyIndex > -1) {
+                        enemies.splice(currenemyIndex, 1)
+                        deadEnemies.add(enemy.dockerId)
+                    }
                 }, 0)
             }
         })
     })
 }
-animate()
 
 addEventListener('keydown', ({key}) => {
     switch (key) {
@@ -255,17 +263,10 @@ addEventListener('keyup', ({key}) => {
     }
 })
 
-function log(msg, type="normal") {
-    const box = document.getElementById('consoleLog');
-    const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-    const entry = document.createElement('div');
-    entry.className = "log-entry";
-    entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg ${type}">${msg}</span>`;
-    box.appendChild(entry);
-    box.scrollTop = box.scrollHeight;
-}
+// idk if this is going to be smooth
+setInterval(syncGame, 500);
+animate();
 
 setTimeout(() => log("Connected to localhost:8080", "info"), 1000);
+setTimeout(() => log("Game started", "info"), 1500);
 setTimeout(() => log("WARNING: No containers detected", "error"), 2000);
-// idk if this is going to be smooth
-setInterval(updateGameState, 500);

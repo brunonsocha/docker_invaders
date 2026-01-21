@@ -20,6 +20,8 @@ type SetGameRequest struct {
 }
 
 func NewGameHandler() (*GameHandler, error) {
+	// these are the default settings then
+	// the website will request settings from the player
 	gm, err := game.NewGameModel(game.Sigkill, 10)
 	if err != nil {
 		return nil, err
