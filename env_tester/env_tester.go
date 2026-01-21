@@ -1,4 +1,4 @@
-/* package main
+package main
 
 import (
 	"context"
@@ -218,4 +218,4 @@ func loadCfg(f io.Reader) (*Config, error) {
 	}
 	return &cfg, nil
 }
-*/
+

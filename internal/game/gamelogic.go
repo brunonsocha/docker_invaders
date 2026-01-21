@@ -21,6 +21,7 @@ const (
 	StatusPlaying GameStatus = "PLAYING"
 	StatusVictory GameStatus = "VICTORY"
 	StatusDefeat GameStatus = "DEFEAT"
+	StatusWaiting GameStatus = "FINALIZING"
 )
 
 type KillMethod string
@@ -46,6 +47,7 @@ type GameDataPayload struct {
 	HP int `json:"hp"`
 	Score int `json:"score"`
 	MaxScore int `json:"max_score"`
+	Stats []RecoveryData `json:"stats"`
 }
 
 func NewGameModel(killMethod KillMethod, maxScore int) (*GameModel, error) {
@@ -83,7 +85,13 @@ func (g *GameModel) Shoot(containerId string) error {
 	}
 	g.State.Score++
 	if g.State.Score == g.State.MaxScore {
-		g.State.Status = StatusVictory
+		g.State.Status = StatusWaiting
+		go func(){
+			g.ApiClient.WaitForData()
+			g.Mu.Lock()
+			g.State.Status = StatusVictory
+			g.Mu.Unlock()
+		}()
 	}
 	return nil
 }
@@ -107,11 +115,24 @@ func (g *GameModel) CheckGame() (*GameDataPayload, error) {
 	score := g.State.Score
 	maxScore := g.State.MaxScore
 	status := g.State.Status
+	targetLabel := g.State.TargetLabel
 	g.Mu.RUnlock()
-	enemies, err := g.ApiClient.CheckContainers(g.State.TargetLabel)
+	enemies, err := g.ApiClient.CheckContainers(targetLabel)
 	if err != nil {
 		return nil, err
-	} 
+	}
+
+	if status == StatusVictory {
+		return &GameDataPayload{
+			Status: status,
+			Enemies: enemies,
+			HP: hp,
+			Score: score,
+			MaxScore: maxScore,
+			Stats: g.ApiClient.GetStats(),
+		}, nil
+	}
+
 	return &GameDataPayload{
 		Status: status,
 		Enemies: enemies,
@@ -145,4 +166,5 @@ func (g *GameModel) SetGame(killMethod string, maxScore int) error {
 	g.State.Score = 0
 	return nil
 }
+
 
