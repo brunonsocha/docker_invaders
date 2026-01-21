@@ -14,9 +14,7 @@ export function updateUI(gamestate) {
         if (element)
             element.innerText = text;
     };
-    setText('scoreVal', gamestate.score || 0);
     setText('livesVal', gamestate.hp !== undefined ? gamestate.hp : 3);
-    setText('levelVal', gamestate.score || 0);
     const current = gamestate.score || 0;
     const total = gamestate.max_score || "?";
     setText('targetsVal', `${current}/${total}`);

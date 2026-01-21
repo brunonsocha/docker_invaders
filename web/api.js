@@ -26,3 +26,15 @@ export async function shootEnemy(containerId) {
         return false;
     }
 }
+
+export async function getShot() {
+    try {
+        const response = await fetch('/api/getshot', {
+            method: 'POST'
+        });
+        return response.ok;
+    } catch (err) {
+        console.rror('Could not get shot')
+        return false
+    }
+}

@@ -1,6 +1,7 @@
 import { 
     updateGameState,
-    shootEnemy
+    shootEnemy,
+    getShot
 } from './api.js';
 
 import {
@@ -15,15 +16,13 @@ function drawGrid() {
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
 
-    for(let x=0; x<800; x+=50) {
+    for(let x=0; x<canvas.width; x+=50) {
         ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
     }
-    for(let y=0; y<600; y+=50) {
+    for(let y=0; y<canvas.height; y+=50) {
         ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
     }
 }
-
-drawGrid()
 
 class Player {
     constructor() {
@@ -45,21 +44,24 @@ class Player {
             this.image = image
             this.width = image.width * scale
             this.height = image.height * scale
+            this.loaded = true;
         }
 
 
     }
     draw() {
+        if (!this.loaded)
+            return;
         ctx.save()
-        ctx.translate(player.position.x + player.width/2, player.position.y + player.height/2)
+        ctx.translate(this.position.x + this.width/2, this.position.y + this.height/2)
         ctx.rotate(this.rotation)
-        ctx.translate(-player.position.x - player.width/2, -player.position.y - player.height/2)
+        ctx.translate(-this.position.x - this.width/2, -this.position.y - this.height/2)
         ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height)
         ctx.restore()
     }
 
     update() {
-        if (this.image) {
+        if (this.loaded) {
             this.draw()
             this.position.x += this.velocity.x
         }
@@ -71,12 +73,13 @@ class Projectile {
         this.position = position
         this.velocity = velocity
         this.radius = 3
+        this.markDelete = false;
     }
 
     draw() {
         ctx.beginPath()
         ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
-        ctx.fillStyle = 'red'
+        ctx.fillStyle = 'yellow'
         ctx.fill()
         ctx.closePath()
     }
@@ -99,25 +102,54 @@ class Enemy {
         this.height = 40
         this.dockerId = dockerId
         this.name = name.startsWith('/') ? name.substring(1) : name
+        this.isKill = false;
+        this.markDelete = false;
     }
 
     draw() {
+        if (this.isKill) {
+            ctx.globalAlpha = 0.5;
+        }
         ctx.fillStyle = 'white'
         ctx.font = '12px monospace'
         ctx.textAlign = 'center'
         ctx.fillText(this.name, this.position.x + this.width/2, this.position.y - 10)
         ctx.fillStyle = '#FF30DD'
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+        ctx.globalAlpha = 1.0;
     }
     update() {
         this.draw()
     }
 }
 
+class EnemyProjectile {
+    constructor({position, velocity}) {
+        this.position = position
+        this.velocity = velocity
+        this.radius = 4 
+        this.markDelete = false;
+    }
+
+    draw() {
+        ctx.beginPath()
+        ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
+        ctx.fillStyle = 'red'
+        ctx.fill()
+        ctx.closePath()
+    }
+
+    update() {
+        this.draw()
+        this.position.x += this.velocity.x
+        this.position.y += this.velocity.y
+    }
+}
+
 const player = new Player()
-const projectiles = []
-let enemies = []
-const deadEnemies = new Set()
+let projectiles = []
+let enemies = new Map();
+let enemyProjectiles = []
 const keys = {
     a: {
         pressed: false
@@ -138,91 +170,130 @@ async function syncGame() {
     updateUI(data);
 
     if (!data.enemies) {
-        enemies = [];
-        deadEnemies.clear();
+        enemies.clear();
         return;
     }
 
-    const serverIds = new Set(data.enemies.map(e => e.id));
+    const serverIds = new Set();
 
-    deadEnemies.forEach(id => {
-        if (!serverIds.has(id)) {
-            deadEnemies.delete(id);
-        }
-    });
-
-    enemies = [];
     data.enemies.forEach((enemyData, index) => {
-        if (deadEnemies.has(enemyData.id)) {
-            return;
+        serverIds.add(enemyData.id);
+        if (!enemies.has(enemyData.id)) {
+            const col = index % 4;
+            const row = Math.floor(index / 4);
+            const newEnemy = new Enemy({
+                position: {
+                    x: col*150 + 50,
+                    y: row*80 + 50
+                },
+                dockerId: enemyData.id,
+                name: enemyData.name || (enemyData.Names ? enemyData.Names[0] : "Unknown")
+            });
+            enemies.set(enemyData.id, newEnemy);
         }
-        const col = index % 4;
-        const row = Math.floor(index / 4);
-        enemies.push(new Enemy({
-            position: {
-                x: col*150 + 50,
-                y: row*80 + 50
-            },
-            dockerId: enemyData.id,
-            name: enemyData.name || (enemyData.Names ? enemyData.Names[0] : "Unknown")
-        }));
     });
+
+    for (const [id, enemy] of enemies) {
+        if (!serverIds.has(id)) {
+            enemies.delete(id);
+        }
+    }
+
+
 }
 
 function animate() {
-    requestAnimationFrame(animate)
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    drawGrid()
-    enemies.forEach(enemy => {
-        enemy.update({
-            velocity: {
-                x: 0,
-                y: 0
-            }
-        })
-    })
-    player.update()
-    projectiles.forEach((projectile, i) => {
-        if (projectile.position.y + projectile.radius <= 0) {
-            setTimeout(() => {
-                projectiles.splice(i, 1)
-            }, 0)
-        } else {
-            projectile.update()
-        }
-    })
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();
     if (keys.a.pressed && player.position.x >= 0) {
-        player.velocity.x = -5
-        player.rotation = -0.15
+        player.velocity.x = -5;
+        player.rotation = -0.15;
     } else if (keys.d.pressed && (player.position.x + player.width <= canvas.width)) {
-        player.velocity.x = 5
-        player.rotation = 0.15
+        player.velocity.x = 5;
+        player.rotation = 0.15;
     } else {
-        player.velocity.x = 0
-        player.rotation = 0
+        player.velocity.x = 0;
+        player.rotation = 0;
     }
-    projectiles.forEach((projectile) => {
-        enemies.forEach((enemy) => {
-            const distance = Math.hypot(projectile.position.x - (enemy.position.x + enemy.width/2), projectile.position.y - (enemy.position.y + enemy.height/2))
+    player.update();
+    enemies.forEach(enemy => {
+        enemy.update();
 
-            if (distance - enemy.width/2 - projectile.radius < 1) {
-                setTimeout(() => {
-                    const currprojIndex = projectiles.indexOf(projectile);
-                    if (currprojIndex > -1) { 
-                        projectiles.splice(currprojIndex, 1)
-                    }
-                }, 0)
-                shootEnemy(enemy.dockerId)
-                setTimeout(() => {
-                    const currenemyIndex = enemies.indexOf(enemy)
-                    if (currenemyIndex > -1) {
-                        enemies.splice(currenemyIndex, 1)
-                        deadEnemies.add(enemy.dockerId)
-                    }
-                }, 0)
+        if (!enemy.isKill && Math.random() < 0.005) {
+            enemyProjectiles.push(new EnemyProjectile({
+                position: {
+                    x: enemy.position.x + enemy.width/2,
+                    y: enemy.position.y + enemy.height
+                },
+                velocity: {
+                    x: 0,
+                    y: 2
+                }
+            }));
+        }
+    });
+
+    enemyProjectiles.forEach(proj => {
+        proj.update();
+
+        if (proj.position.y - proj.radius > canvas.height) {
+            proj.markDelete = true;
+        }
+
+        if (player.loaded && !proj.markDelete) {
+            if (proj.position.x >= player.position.x &&
+                proj.position.x <= player.position.x + player.width &&
+                proj.position.y >= player.position.y &&
+                proj.position.y <= player.position.y + player.height) {
+                proj.markDelete = true;
+                log("Hit registered", "error");
+                getShot();
             }
-        })
-    })
+        }
+    });
+
+    let activeEnemyProjectiles = [];
+    enemyProjectiles.forEach(p => {
+        if (!p.markDelete)
+            activeEnemyProjectiles.push(p);
+    });
+    enemyProjectiles = activeEnemyProjectiles;
+
+    projectiles.forEach(projectile => {
+        projectile.update();
+
+        if (projectile.position.y + projectile.radius <= 0) {
+            projectile.markDelete = true;
+        }
+
+        enemies.forEach(enemy => {
+            if (enemy.isKill || projectile.markDelete) return;
+
+            const distX = Math.abs(projectile.position.x - (enemy.position.x + enemy.width/2));
+            const distY = Math.abs(projectile.position.y - (enemy.position.y + enemy.height/2));
+
+            if (distX <= (enemy.width/2 + projectile.radius) && 
+                distY <= (enemy.height/2 + projectile.radius)) {
+                
+                projectile.markDelete = true;
+                enemy.isKill = true;
+                
+                shootEnemy(enemy.dockerId).then(success => {
+                    if (!success) {
+                        enemy.isKill = false;
+                    }
+                });
+            }
+        });
+    });
+
+    let activeProjectiles = [];
+    projectiles.forEach(p => {
+        if (!p.markDelete) activeProjectiles.push(p);
+    });
+    projectiles = activeProjectiles;
+    
 }
 
 addEventListener('keydown', ({key}) => {
@@ -245,7 +316,7 @@ addEventListener('keydown', ({key}) => {
                     y: -10
                 }
             }))
-            break
+            break;
     }
 })
 
