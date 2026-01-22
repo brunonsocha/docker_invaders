@@ -117,11 +117,13 @@ class Enemy {
         if (this.isKill) {
             ctx.globalAlpha = 0.5;
         }
-        ctx.fillStyle = 'white'
-        ctx.font = '12px monospace'
+        ctx.fillStyle = '#feda83'
+        ctx.font = '16px "VT323"'
         ctx.textAlign = 'center'
         ctx.fillText(this.name, this.position.x + this.width/2, this.position.y - 10)
-        ctx.fillStyle = '#FF30DD'
+        ctx.fillStyle = '#0db7ed'
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#0db7ed'
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
         ctx.globalAlpha = 1.0;
     }

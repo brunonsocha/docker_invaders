@@ -20,6 +20,7 @@ type DockerClient struct {
 type RecoveryData struct {
 	Container ContainerInfo `json:"container"`
 	KillMethod string `json:"kill_method"`
+	TimeToKill time.Duration `json:"ttk"`
 	TimeToRecover time.Duration `json:"ttr"`
 	State string `json:"state"`
 }
@@ -68,9 +69,9 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 	go func(){
 		defer d.wg.Done()
 		var startTime time.Time
+		var timeToKill time.Duration
 		killTime := time.Now()
 		for {
-			time.Sleep(500 * time.Millisecond)
 			stateResp, err := d.cli.ContainerInspect(context.Background(), containerId)
 			if err != nil {
 				d.mu.Lock()
@@ -81,6 +82,7 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 						Name: "Unknown",
 					},
 					KillMethod: killMethod,
+					TimeToKill: time.Duration(0),
 					TimeToRecover: time.Duration(0),
 					State: "FAILED",
 				})
@@ -88,6 +90,7 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 			}
 			if stateResp.State.Health != nil {
 				if stateResp.State.Health.Status != "healthy" {
+					timeToKill = time.Now().Sub(killTime)
 					startTime = time.Now()
 					break
 				}
@@ -106,11 +109,13 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 						Name: "Unknown",
 					},
 					KillMethod: killMethod,
+					TimeToKill: time.Duration(0),
 					TimeToRecover: time.Duration(0),
 					State: "FAILED",
 				})
 				return
 			}
+			time.Sleep(100 * time.Millisecond)
 		}
 		recoveryTime := time.Now()
 		for {
@@ -125,6 +130,7 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 						Name: "Unknown",
 					},
 					KillMethod: killMethod,
+					TimeToKill: timeToKill,
 					TimeToRecover: time.Duration(0),
 					State: "FAILED",
 				})
@@ -139,6 +145,7 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 						Name: stateResp.Name,
 					},
 					KillMethod: killMethod,
+					TimeToKill: timeToKill,
 					TimeToRecover: time.Now().Sub(startTime),
 					State: "RECOVERED",
 				})
@@ -153,6 +160,7 @@ func (d *DockerClient) KillContainer(containerId, killMethod string) error {
 						Name: stateResp.Name,
 					},
 					KillMethod: killMethod,
+					TimeToKill: timeToKill,
 					TimeToRecover: time.Duration(0),
 					State: "FAILED",
 				})

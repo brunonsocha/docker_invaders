@@ -62,23 +62,30 @@ export function showVictory(stats) {
         const row = document.createElement('div');
         row.className = 'stat-row';
         
-        const seconds = (s.ttr / 1_000_000_000).toFixed(2);
+        const killSeconds = (s.ttr / 1_000_000_000).toFixed(2);
+        const recSeconds = (s.ttk / 1_000_000_000).toFixed(2);
         totalNs += s.ttr;
 
-        if (s.ttr > maxNs) {
-            maxNs = s.ttr;
-            slowestName = s.container.name;
+        if (s.state === "RECOVERED") {
+            totalNs += s.ttr;
+            if (s.ttr > maxNs) {
+                maxNs = s.ttr;
+                slowestName = s.container.name;
+            }
         }
 
         row.innerHTML = `
             <span style="color: #fff">${s.container.name}</span>
             <span style="color: ${s.state === 'RECOVERED' ? 'var(--success)' : 'var(--danger)'}">${s.state}</span>
-            <span style="font-family: monospace">${seconds}s</span>
+            <span style="font-family: monospace; color: var(--accent);">${killSeconds}s</span>
+            <span style="font-family: monospace">${recSeconds}s</span>
         `;
         list.appendChild(row);
     });
 
-    const avgSeconds = (stats.length > 0) ? (totalNs / stats.length / 1_000_000_000).toFixed(2) : "0.00";
+    const recoveredCount = stats.filter(s => s.state === "RECOVERED").length;
+    const avgSeconds = (recoveredCount > 0) ? (totalNs / recoveredCount / 1_000_000_000).toFixed(2) : "0.00";
+    
     document.getElementById('avgTime').innerText = avgSeconds + "s";
     document.getElementById('slowestContainer').innerText = slowestName;
     
@@ -90,11 +97,11 @@ window.downloadCSV = function() {
     
     const stats = window.lastGameStats;
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Container ID,Name,Kill Method,Status,Recovery Time (s)\n";
+    csvContent += "Container ID,Name,Kill Method,Status,Kill Time(s),Recovery Time (s)\n";
 
     stats.forEach(s => {
         const timeSec = (s.ttr / 1_000_000_000).toFixed(4);
-        csvContent += `${s.container.id},${s.container.name},${s.kill_method},${s.state},${timeSec}\n`;
+        csvContent += `${s.container.id},${s.container.name},${s.kill_method},${s.state},${killSec},${recSec}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);

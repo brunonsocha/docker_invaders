@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Invaders</title>
-    <link rel="stylesheet" href="/static/style.css?v=2">
+    <link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
 
@@ -71,7 +71,7 @@
     </div>
     <div id="loadingScreen" class="overlay hidden">
         <div class="menu-box">
-        <h1>LOADING STATS</h1>
+        <h1>FINISHED - LOADING STATS</h1>
         <div class="loading-spinner">
             <div class="spinner-bar"></div>
         </div>
@@ -88,6 +88,7 @@
                 <div class="stat-row header">
                     <span>CONTAINER</span>
                     <span>STATUS</span>
+                    <span>DEATH</span>
                     <span>RECOVERY</span>
                 </div>
                 <div id="statsList" class="stats-list"></div>
@@ -106,7 +107,7 @@
 
             <div class="btn-group">
                 <button onclick="downloadCSV()">DOWNLOAD CSV</button>
-                <button onclick="location.reload()" style="background: transparent; border: 1px solid var(--success); color: var(--success);">RESTART</button>
+                <button onclick="location.reload()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">RESTART</button>
             </div>
         </div>
     </div>
