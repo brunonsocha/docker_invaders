@@ -20,7 +20,7 @@ Shoot at your containers, kill them and watch them ~~restart~~ respawn. At the e
      your-project:
       restart: always
       labels:
-        tested: true              # This is the "tested=true" from the config.yaml file
+        tested: true
    ```
    Make sure the healthcheck is on as well.
 
