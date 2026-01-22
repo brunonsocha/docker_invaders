@@ -6,3 +6,53 @@ This is a fork of the [env_tester](https://github.com/brunonsocha/env_tester) pr
 While it was very fun to write, it's very boring to watch. This project is supposed to help with that.
 
 Shoot at your containers, kill them and watch them ~~restart~~ respawn. At the end, you'll be presented with stats and an option to download detailed data in .csv format.
+
+## How to run it
+### What you'll need
+- Docker
+- Docker Compose
+
+### How to run it
+1. Setup
+   Mark the containers you want to test with the label chosen in the *config.yaml* file like so:
+   ```yaml
+   services:
+     your-project:
+      restart: always
+      labels:
+        tested: true              # This is the "tested=true" from the config.yaml file
+   ```
+   Make sure the healthcheck is on as well.
+
+2. **Start up the demo**
+   ```bash
+   docker compose --profile demo up
+   ```
+   Alternatively, if you want to test it on some random containers:
+   ```bash
+   docker compose up
+   ```
+
+3. **Open the browser**
+   Navigate to:
+   ```text
+   http://localhost:3000/
+   ```
+
+4. **Play**
+
+5. **Get the report**  
+   While you were playing, the program was collecting data about the containers you were killing. You'll be presented with a summary screen, with an option to download detailed data in a .csv format.
+
+### Clean up
+Run:
+```bash
+docker compose down
+```
+
+## How it works
+1. The tool mounts */var/run/docker.sock* to check the container list.
+2. The tool selects containers marked with the chosen label.
+3. The tool lets you kill the containers using SIGKILL, SIGTERM or SIGSEGV, by communicating with the API.
+4. The frontend has no impact on measurements of shutdown and restart times.
+5. The tool monitors the state of targeted containers by polling the Docker API for their state.
