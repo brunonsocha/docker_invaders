@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="web/img/title.svg?v=2" alt="DOCKER INVADERS" width="600">
-</div>
+
 
 ## Description
 This is a fork of the [env_tester](https://github.com/brunonsocha/env_tester) project, a tool to test containers by killing them, restarting them and measuring the shutdown and recovery times.
