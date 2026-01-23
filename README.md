@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/img/title1.svg?v=3" alt="DOCKER INVADERS" width="600">
+  <img src="web/img/titlecard.png" alt="DOCKER INVADERS" width="600">
 </div>
 
 ## Description
