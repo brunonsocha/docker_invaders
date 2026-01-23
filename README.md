@@ -56,3 +56,33 @@ docker compose down
 3. The tool lets you kill the containers using SIGKILL, SIGTERM or SIGSEGV, by communicating with the API.
 4. The frontend has no impact on measurements of shutdown and restart times.
 5. The tool monitors the state of targeted containers by polling the Docker API for their state.
+
+## Project structure
+
+```text
+.
+├── cmd/
+│   └── controller/
+│       └── main.go           # Entrypoint
+├── internal/
+│   ├── api/
+│   │   └── handlers.go       # HTTP handlers
+│   ├── demo_containers/
+│   │   └── enemycontainer.go # Entrypoint of demo containers
+│   └── game/
+│       ├── dockerclient.go   # Docker interaction layer
+│       └── gamelogic.go      # Game logic
+├── web/
+│   ├── img/                  # Assets (images)
+│   ├── api.js                # Frontend-backend communication
+│   ├── game.js               # Game and rendering
+│   ├── index.html            # Webpage
+│   ├── style.css             # Styling
+│   └── ui.js                 # UI logic
+├── docker-compose.yaml       # Sets up the controller (and demo containers) 
+├── Dockerfile.controller     # Controller's dockerfile
+├── Dockerfile.demo           # Demo containers' dockerfile 
+├── go.mod
+├── go.sum
+└── README.md
+```
