@@ -1,13 +1,11 @@
 <svg width="600" height="120" viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=VT323&amp;display=swap');
-            
             .text-base {
-                font-family: 'VT323', monospace;
-                font-size: 70px; /* Increased size slightly */
-                font-weight: 400;
-                letter-spacing: 4px;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 70px; 
+                font-weight: 700;
+                letter-spacing: -2px;
                 text-transform: uppercase;
             }
 
@@ -49,8 +47,11 @@
         </linearGradient>
     </defs>
 
-    <rect width="100%" height="100%" fill="#050510"/> <rect width="100%" height="100%" fill="url(#bgGradient)"/> <rect width="100%" height="100%" fill="url(#gridPattern)"/> <text class="text-base text-shadow" x="51%" y="67%" text-anchor="middle">DOCKER_INVADERS_</text>
-    
+    <rect width="100%" height="100%" fill="#050510"/>
+    <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+    <rect width="100%" height="100%" fill="url(#gridPattern)"/>
+
+    <text class="text-base text-shadow" x="50.5%" y="67%" text-anchor="middle">DOCKER_INVADERS_</text>
     <text class="text-base text-chrome" x="50%" y="65%" text-anchor="middle">
         DOCKER_INVADERS<tspan class="cursor">_</tspan>
     </text>
