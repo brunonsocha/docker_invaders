@@ -32,7 +32,8 @@ body {
     line-height: 1.4;
     display: flex;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 0;
+    margin: 0;
     height: 100vh;
     overflow: hidden; 
     text-shadow: 0 0 4px rgba(254, 218, 132, 0.4);
@@ -51,7 +52,7 @@ body::after {
 
 main {
     width: 100%;
-    max-width: 900px;
+    max-width: none;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -60,10 +61,14 @@ main {
 }
 
 header {
-    margin-bottom: 1rem; 
-    border-bottom: 2px solid var(--purple-dark); 
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--purple-dark); 
     padding-bottom: 0.5rem;
     display: flex;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem 0;
     justify-content: space-between;
     align-items: flex-end;
     background: linear-gradient(to bottom, transparent, rgba(67, 69, 127, 0.3));
@@ -98,7 +103,9 @@ h1 {
     display: grid; 
     grid-template-columns: repeat(2, 1fr); 
     gap: 1rem; 
-    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 1rem auto;
 }
 
 .hud-item {
@@ -125,13 +132,15 @@ h1 {
 
 .canvas-container {
     flex-grow: 1; 
-    border: 3px solid var(--purple-med);
-    background: #000;
+    border-top: 3px solid var(--purple-med);
+    border-bottom: 3px solid var(--purple-med);
+    background: transparent;
     position: relative;
+    margin-bottom: 0;
     display: flex;
+    width: 100%;
     justify-content: center;
     align-items: center;
-    margin-bottom: 1rem;
     box-shadow: 0 0 20px var(--purple-dark), 
         inset 0 0 20px rgba(0,0,0,0.8);
     overflow: hidden;
@@ -141,16 +150,18 @@ canvas {
     image-rendering: pixelated; 
     max-width: 100%;
     max-height: 100%;
+    display: block;
 }
 
 .console-log {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
     height: 150px;
-    border: 2px solid var(--purple-dark);
-    padding: 10px;
-    overflow-y: auto; 
-    font-size: 0.85rem;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid var(--deep-blue);
+    padding: 10px 2rem;
+    overflow-y: auto;
     font-family: 'VT323', monospace;
     font-size: 1rem;
 }
@@ -385,6 +396,27 @@ button:hover {
 }
 
 #defeatScreen hr { width: 60%; margin: 20px 0; border-top: 1px solid #ccc; }
+
+.msg-box.warning {
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 
+        0 0 25px rgba(255, 0, 85, 0.4),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.msg-box.warning button {
+    background: transparent;
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+}
+
+.msg-box.warning button:hover {
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 0 0 25px var(--danger);
+}
 
 @keyframes blink { 50% { opacity: 0; } }
 

@@ -18,17 +18,37 @@ import {
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const GAME_WIDTH = 1000;
+let boundaryLeft = 0;
+let boundaryRight = 0;
 
-function drawGrid() {
-    ctx.strokeStyle = '#333';
+function drawBackground() {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(boundaryLeft, 0, GAME_WIDTH, canvas.height);
+
     ctx.lineWidth = 1;
+    ctx.strokeStyle = '#1a1a1a'; 
+    
+    for(let x = boundaryLeft; x <= boundaryRight; x += 50) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for(let y = 0; y < canvas.height; y += 50) {
+        ctx.beginPath(); ctx.moveTo(boundaryLeft, y); ctx.lineTo(boundaryRight, y); ctx.stroke();
+    }
+}
 
-    for(let x=0; x<canvas.width; x+=50) {
-        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
-    }
-    for(let y=0; y<canvas.height; y+=50) {
-        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
-    }
+function drawForeground() {
+    ctx.clearRect(0, 0, boundaryLeft, canvas.height);
+    ctx.clearRect(boundaryRight, 0, canvas.width - boundaryRight, canvas.height);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#976393'; 
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#976393';
+    ctx.beginPath();
+    ctx.moveTo(boundaryLeft, 0); ctx.lineTo(boundaryLeft, canvas.height);
+    ctx.moveTo(boundaryRight, 0); ctx.lineTo(boundaryRight, canvas.height);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
 }
 
 class Player {
@@ -52,6 +72,10 @@ class Player {
             this.width = image.width * scale
             this.height = image.height * scale
             this.loaded = true;
+            this.position = {
+                x: boundaryLeft + (GAME_WIDTH / 2) - (this.width / 2),
+                y: canvas.height - 100
+            }
         }
 
 
@@ -86,7 +110,7 @@ class Projectile {
     draw() {
         ctx.beginPath()
         ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
-        ctx.fillStyle = 'yellow'
+        ctx.fillStyle = '#feda84'
         ctx.fill()
         ctx.closePath()
     }
@@ -143,7 +167,7 @@ class EnemyProjectile {
     draw() {
         ctx.beginPath()
         ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
-        ctx.fillStyle = 'red'
+        ctx.fillStyle = '#ff9b83'
         ctx.fill()
         ctx.closePath()
     }
@@ -184,10 +208,11 @@ function getSafePosition(newWidth, newHeight, existingEnemies) {
     let maxAttempts = 100;
     let x, y;
     let safe = false;
-
+    const minX = boundaryLeft + padding;
+    const maxX = boundaryRight - newWidth - padding;
     while (!safe && attempts < maxAttempts) {
         attempts++;
-        x = Math.random() * (canvas.width - newWidth - 2 * padding) + padding;
+        x = Math.random() * (maxX - minX) + minX;
         y = Math.random() * (maxY - newHeight - padding) + padding;
         safe = true;
 
@@ -277,11 +302,11 @@ function animate() {
         return;
     animationId = requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
-    if (keys.a.pressed && player.position.x >= 0) {
-        player.velocity.x = -5;
+    drawBackground();
+    if (keys.a.pressed && player.position.x >= boundaryLeft) {
+        player.velocity.x = -7;
         player.rotation = -0.15;
-    } else if (keys.d.pressed && (player.position.x + player.width <= canvas.width)) {
+    } else if (keys.d.pressed && (player.position.x + player.width <= boundaryRight)) {
         player.velocity.x = 5;
         player.rotation = 0.15;
     } else {
@@ -365,7 +390,7 @@ function animate() {
         if (!p.markDelete) activeProjectiles.push(p);
     });
     projectiles = activeProjectiles;
-    
+    drawForeground();
 }
 
 const startGame = async (killMethod, iterations) => {
@@ -419,10 +444,33 @@ addEventListener('keyup', ({key}) => {
             keys.space.pressed = false
             break
     }
-})
+}) 
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    const container = document.querySelector('.canvas-container');
+    if (container) {
+        canvas.height = container.clientHeight;
+    } else {
+        canvas.height = window.innerHeight; 
+    }
+
+    boundaryLeft = (canvas.width / 2) - (GAME_WIDTH / 2);
+    boundaryRight = (canvas.width / 2) + (GAME_WIDTH / 2);
+
+    if (typeof player !== 'undefined' && player.position) {
+        if (player.position.x < boundaryLeft) player.position.x = boundaryLeft;
+        if (player.position.x > boundaryRight - player.width) player.position.x = boundaryRight - player.width;
+    }
+
+    if (typeof enemies !== 'undefined') {
+        enemies.forEach(enemy => {
+             if (enemy.position.x < boundaryLeft) enemy.position.x = boundaryLeft + 10;
+             if (enemy.position.x > boundaryRight - enemy.width) enemy.position.x = boundaryRight - enemy.width - 10;
+        });
+    }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 initWelcome();
 initMenu(startGame);
 
-setTimeout(() => log("Connected to localhost:8080", "info"), 1000);
-setTimeout(() => log("Game started", "info"), 1500);
-setTimeout(() => log("WARNING: No containers detected", "error"), 2000);
