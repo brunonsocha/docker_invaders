@@ -1,25 +1,27 @@
-<svg width="600" height="100" viewBox="0 0 600 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="600" height="120" viewBox="0 0 600 120" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=VT323&amp;display=swap');
             
-            .bg { fill: #050510; }
-            
-            .text {
+            .text-base {
                 font-family: 'VT323', monospace;
-                font-size: 60px;
+                font-size: 70px; /* Increased size slightly */
                 font-weight: 400;
-                letter-spacing: 2px;
+                letter-spacing: 4px;
                 text-transform: uppercase;
+            }
+
+            .text-shadow {
+                fill: #43457f; 
+                opacity: 0.8;
+            }
+
+            .text-chrome {
                 fill: url(#chromeGradient);
-                filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
             }
 
             .cursor {
-                font-family: 'VT323', monospace;
-                font-size: 60px;
-                fill: #ff9b83; /* Salmon Accent */
-                text-shadow: 0 0 10px #ff9b83;
+                fill: #ff9b83; 
                 animation: blink 0.8s step-end infinite;
             }
 
@@ -28,6 +30,16 @@
                 50% { opacity: 0; }
             }
         </style>
+        
+        <linearGradient id="bgGradient" x1="0" y1="0" x2="0" y2="100%">
+            <stop offset="0%" stop-color="#43457f" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#050510" stop-opacity="1"/>
+        </linearGradient>
+
+        <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#43457f" stroke-width="2" opacity="0.3"/>
+        </pattern>
+
         <linearGradient id="chromeGradient" x1="0" y1="0" x2="0" y2="100%">
             <stop offset="0%" stop-color="#ffffff"/>
             <stop offset="40%" stop-color="#e0e0e0"/>
@@ -37,9 +49,9 @@
         </linearGradient>
     </defs>
 
-    <rect width="100%" height="100%" class="bg"/>
-
-    <text x="50%" y="65%" text-anchor="middle">
-        <tspan class="text">DOCKER_INVADERS</tspan><tspan class="cursor">_</tspan>
+    <rect width="100%" height="100%" fill="#050510"/> <rect width="100%" height="100%" fill="url(#bgGradient)"/> <rect width="100%" height="100%" fill="url(#gridPattern)"/> <text class="text-base text-shadow" x="51%" y="67%" text-anchor="middle">DOCKER_INVADERS_</text>
+    
+    <text class="text-base text-chrome" x="50%" y="65%" text-anchor="middle">
+        DOCKER_INVADERS<tspan class="cursor">_</tspan>
     </text>
 </svg>
