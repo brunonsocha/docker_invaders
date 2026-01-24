@@ -418,8 +418,6 @@ button:hover {
     box-shadow: 0 0 25px var(--danger);
 }
 
-@keyframes blink { 50% { opacity: 0; } }
-
 .console-log::-webkit-scrollbar { width: 8px; }
 .console-log::-webkit-scrollbar-thumb { background: #333; }
 .console-log::-webkit-scrollbar-track { background: var(--bg); }

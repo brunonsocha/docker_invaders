@@ -292,6 +292,7 @@ async function syncGame() {
                 name: enemyData.name || (enemyData.Names ? enemyData.Names[0] : "Unknown")
             });
             enemies.set(enemyData.id, newEnemy);
+            log(`New enemy ${enemyData.name}`, "error")
         }
     });
 
@@ -311,7 +312,7 @@ function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
     if (keys.a.pressed && player.position.x >= boundaryLeft) {
-        player.velocity.x = -7;
+        player.velocity.x = -5;
         player.rotation = -0.15;
     } else if (keys.d.pressed && (player.position.x + player.width <= boundaryRight)) {
         player.velocity.x = 5;
@@ -324,7 +325,7 @@ function animate() {
     enemies.forEach(enemy => {
         enemy.update();
 
-        if (!enemy.isKill && Math.random() < 0.005 && !isFinalizing) {
+        if (!enemy.isKill && Math.random() < 0.01 && !isFinalizing) {
             enemyProjectiles.push(new EnemyProjectile({
                 position: {
                     x: enemy.position.x + enemy.width/2,
@@ -382,6 +383,7 @@ function animate() {
                 
                 projectile.markDelete = true;
                 enemy.isKill = true;
+                log("Enemy shot", "error")
                 
                 shootEnemy(enemy.dockerId).then(success => {
                     if (!success) {
@@ -402,6 +404,7 @@ function animate() {
 
 const startGame = async (killMethod, iterations) => {
     const success = await setGame(killMethod, iterations);
+    log("Game started", "error")
     if (success) {
         showGameInterface();
         gameRunning = true;
@@ -410,7 +413,7 @@ const startGame = async (killMethod, iterations) => {
             clearInterval(gameInterval);
         if (animationId)
             cancelAnimationFrame(animationId);
-        gameInterval = setInterval(syncGame, 500);
+        gameInterval = setInterval(syncGame, 300);
         animate();
     }
 }
@@ -467,6 +470,7 @@ function resizeCanvas() {
     if (typeof player !== 'undefined' && player.position) {
         if (player.position.x < boundaryLeft) player.position.x = boundaryLeft;
         if (player.position.x > boundaryRight - player.width) player.position.x = boundaryRight - player.width;
+        player.position.y = canvas.height - 100;
     }
 
     if (typeof enemies !== 'undefined') {
