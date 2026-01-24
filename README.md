@@ -38,7 +38,7 @@ Shoot at your containers, kill them and watch them ~~restart~~ respawn. At the e
 3. **Open the browser**
    Navigate to:
    ```text
-   http://localhost:3000/
+   http://localhost:8080/
    ```
 
 4. **Play**
@@ -84,7 +84,7 @@ docker compose down
 ├── docker-compose.yaml       # Sets up the controller (and demo containers) 
 ├── Dockerfile.controller     # Controller's dockerfile
 ├── Dockerfile.demo           # Demo containers' dockerfile 
-├── go.mod
-├── go.sum
-└── README.md
+├── go.mod                    # Dependencies
+├── go.sum                    # Dependecies' checksums
+└── README.md                 # What you're currently reading
 ```
