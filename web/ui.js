@@ -54,8 +54,8 @@ export function showVictory(stats) {
     const list = document.getElementById('statsList');
     list.innerHTML = '';
     
-    let totalNs = 0;
-    let maxNs = 0;
+    let totalRecoveryNs = 0; 
+    let maxRecoveryNs = 0;
     let slowestName = "None";
 
     stats.forEach(s => {
@@ -64,12 +64,11 @@ export function showVictory(stats) {
         
         const killSeconds = (s.ttr / 1_000_000_000).toFixed(2);
         const recSeconds = (s.ttk / 1_000_000_000).toFixed(2);
-        totalNs += s.ttr;
 
         if (s.state === "RECOVERED") {
-            totalNs += s.ttr;
-            if (s.ttr > maxNs) {
-                maxNs = s.ttr;
+            totalRecoveryNs += s.ttk; 
+            if (s.ttk > maxRecoveryNs) {
+                maxRecoveryNs = s.ttk;
                 slowestName = s.container.name;
             }
         }
@@ -84,7 +83,8 @@ export function showVictory(stats) {
     });
 
     const recoveredCount = stats.filter(s => s.state === "RECOVERED").length;
-    const avgSeconds = (recoveredCount > 0) ? (totalNs / recoveredCount / 1_000_000_000).toFixed(2) : "0.00";
+    
+    const avgSeconds = (recoveredCount > 0) ? (totalRecoveryNs / recoveredCount / 1_000_000_000).toFixed(2) : "0.00";
     
     document.getElementById('avgTime').innerText = avgSeconds + "s";
     document.getElementById('slowestContainer').innerText = slowestName;
@@ -100,7 +100,9 @@ window.downloadCSV = function() {
     csvContent += "Container ID,Name,Kill Method,Status,Kill Time(s),Recovery Time (s)\n";
 
     stats.forEach(s => {
-        const timeSec = (s.ttr / 1_000_000_000).toFixed(4);
+        const killSec = (s.ttr / 1_000_000_000).toFixed(4);
+        const recSec = (s.ttk / 1_000_000_000).toFixed(4);
+
         csvContent += `${s.container.id},${s.container.name},${s.kill_method},${s.state},${killSec},${recSec}\n`;
     });
 

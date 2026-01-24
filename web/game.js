@@ -126,7 +126,7 @@ class Enemy {
     constructor({position, dockerId, name}) {
         this.position = position
         this.velocity = {
-            x: 0,
+            x: 1,
             y: 0
         },
         this.width = 40
@@ -146,12 +146,19 @@ class Enemy {
         ctx.textAlign = 'center'
         ctx.fillText(this.name, this.position.x + this.width/2, this.position.y - 10)
         ctx.fillStyle = '#0db7ed'
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 0;
         ctx.shadowColor = '#0db7ed'
         ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
         ctx.globalAlpha = 1.0;
     }
     update() {
+        this.position.x += this.velocity.x;
+        if (this.position.x + this.width >= boundaryRight) {
+            this.velocity.x = -1;
+        }
+        if (this.position.x <= boundaryLeft) {
+            this.velocity.x = 1; 
+        }
         this.draw()
     }
 }
@@ -325,7 +332,7 @@ function animate() {
                 },
                 velocity: {
                     x: 0,
-                    y: 2
+                    y: 3
                 }
             }));
         }
