@@ -10,11 +10,7 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/config
       - ./web:/root/web
-    environment:
-      CONFIG_PATH: /config/config.yaml
-      OUTPUT_DIR: /config
 
 
   node-1:

@@ -51,7 +51,6 @@ func (gh *GameHandler) ShootPost(w http.ResponseWriter, r *http.Request) {
 
 func (gh *GameHandler) GetShotPost(w http.ResponseWriter, r *http.Request) {
 	if err := gh.GameModel.GetShot(); err != nil {
-		// will write a helper for this.
 		gh.GameModel.ErrorLog.Printf("Couldn't check the game: %v", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return

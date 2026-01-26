@@ -5,8 +5,6 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-# pls cache this layer
-
 COPY . .
 
 RUN CGO_ENABLED=0 go build -o controller ./cmd/controller
